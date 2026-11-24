@@ -54,7 +54,7 @@ static void MX_GPIO_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-uint8_t a;
+volatile int a;
 /* USER CODE END 0 */
 
 /**
@@ -95,13 +95,14 @@ int main(void)
   while (1)
   {
 		if(a==1)
-		{HAL_Delay(20);
-		
-			
-			if(a==1)
-			{
-				 HAL_GPIO_TogglePin(GPIOA,GPIO_PIN_9);
+		{HAL_NVIC_DisableIRQ(EXTI15_10_IRQn);
+			HAL_Delay(20);
+			__HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_11);
+		HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
+			if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_11) == GPIO_PIN_SET)
+			{HAL_GPIO_TogglePin(GPIOA,GPIO_PIN_9);
 			}
+			a=0;
 			
 		}
 		
@@ -176,9 +177,13 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin : PA11 */
   GPIO_InitStruct.Pin = GPIO_PIN_11;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
 
